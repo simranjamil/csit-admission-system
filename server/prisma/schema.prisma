@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model AdmissionSession {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  year      Int      @unique
+  status    String   @default("DRAFT") // DRAFT | ACTIVE | CLOSED
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  sessionPrograms SessionProgram[]
+
+  @@map("admission_sessions")
+}
+
+
+model Program {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+
+  timings ProgramTiming[]
+
+
+  @@map("programs")
+}
+
+
+model ProgramTiming {
+  id        Int     @id @default(autoincrement())
+  programId Int     @map("program_id")
+  timing    String // Evening | Weekend (future: Morning etc.)
+  isActive  Boolean @default(true) @map("is_active")
+
+
+  program         Program          @relation(fields: [programId], references: [id])
+  sessionPrograms SessionProgram[]
+
+
+  @@unique([programId, timing])
+  @@map("program_timings")
+}
+
+
+model SessionProgram {
+  id              Int     @id @default(autoincrement())
+  sessionId       Int     @map("session_id")
+  programTimingId Int     @map("program_timing_id")
+  seats           Int     @default(0)
+  rollPrefix      String? @map("roll_prefix")
+
+
+  session       AdmissionSession @relation(fields: [sessionId], references: [id])
+  programTiming ProgramTiming    @relation(fields: [programTimingId], references: [id])
+
+
+  @@unique([sessionId, programTimingId])
+  @@map("session_programs")
+}
+
+
