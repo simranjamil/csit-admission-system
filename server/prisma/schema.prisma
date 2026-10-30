@@ -71,3 +71,84 @@ model SessionProgram {
 }
 
 
+
+model Module {
+  id          Int          @id @default(autoincrement())
+  code        String       @unique
+  name        String
+  permissions Permission[]
+ 
+  @@map("modules")
+}
+ 
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String?   @unique
+  passwordHash String    @map("password_hash")
+  fullName     String    @map("full_name")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+ 
+  userRoles UserRole[]
+ 
+  @@map("users")
+}
+ 
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  homePath    String  @default("/") @map("home_path")
+ 
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+ 
+  @@map("roles")
+}
+ 
+model UserRole {
+  userId Int @map("user_id")
+  roleId Int @map("role_id")
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+ 
+model Permission {
+  id          Int     @id @default(autoincrement())
+  moduleId    Int     @map("module_id")
+  code        String  @unique
+  description String?
+ 
+  module          Module           @relation(fields: [moduleId], references: [id])
+  rolePermissions RolePermission[]
+ 
+  @@map("permissions")
+}
+ 
+model RolePermission {
+  roleId       Int @map("role_id")
+  permissionId Int @map("permission_id")
+ 
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+ 
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+ 
+model Session {
+  sid       String   @id
+  data      String
+  expiresAt DateTime @map("expires_at")
+ 
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+

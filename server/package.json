@@ -11,10 +11,9 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio"
   },
-    "prisma": {
+  "prisma": {
     "seed": "node prisma/seed.js"
   },
-  
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -43,5 +42,4 @@
     "prisma@6.19.3": true,
     "argon2@0.45.1": true
   }
-  
 }
