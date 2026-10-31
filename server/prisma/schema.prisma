@@ -92,6 +92,7 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
  
   userRoles UserRole[]
+  auditLogs AuditLog[]
  
   @@map("users")
 }
@@ -151,4 +152,20 @@ model Session {
   @@map("sessions")
 }
 
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  action      String
+  entityType  String?  @map("entity_type")
+  entityId    Int?     @map("entity_id")
+  description String
+  metadata    Json?
+  ipAddress   String?  @map("ip_address")
+  createdAt   DateTime @default(now()) @map("created_at")
+ 
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+ 
+  @@index([createdAt])
+  @@map("audit_logs")
+}
 

@@ -105,7 +105,9 @@ async function seedAuth() {
       name: "Admin",
       description: "Full access",
       homePath: "/admin",
-      permissions: permissionList.map((p) => p.code),
+      permissions: permissionList
+        .map((p) => p.code)
+        .filter((code) => code !== "interview.submit"),
     },
     {
       name: "Interviewer",
