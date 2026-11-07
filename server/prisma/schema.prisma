@@ -22,6 +22,7 @@ model AdmissionSession {
   importJobs     ImportJob[]
   workflowStages WorkflowStage[]
   rules Rule[]
+  importBatches ImportBatch[]
 
 
   @@map("admission_sessions")
@@ -103,7 +104,7 @@ model User {
   importJobs         ImportJob[]
   admissionDecisions AdmissionDecision[]
   ruleVersions RuleVersion[]
-
+  importBatches ImportBatch[] 
  
   @@map("users")
 }
@@ -228,13 +229,16 @@ model Application {
   @@unique([sessionId, rollNo])
   @@unique([sessionId, studentId, programTimingId])
   @@index([sessionId])
+  importBatchId Int?         @map("import_batch_id")
+  importBatch   ImportBatch? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+  @@index([importBatchId])
   @@map("applications")
 }
  
 model EligibilityEvaluation {
   id            Int      @id @default(autoincrement())
   applicationId Int      @map("application_id")
-  decision      String   // ELIGIBLE | INELIGIBLE
+  decision      String   // ELIGIBLE | NOT_ELIGIBLE | NEEDS_REVIEW
   reason        String?
   evaluatedAt   DateTime @default(now()) @map("evaluated_at")
   ruleVersionId Int? @map("rule_version_id")
@@ -351,3 +355,27 @@ model RuleVersion {
   @@unique([ruleId, version])
   @@map("rule_versions")
 }
+
+model ImportBatch {
+  id            Int      @id @default(autoincrement())
+  sessionId     Int      @map("session_id")
+  batchName     String   @map("batch_name")
+  fileName      String   @map("file_name")
+  fileHash      String   @map("file_hash")
+  description   String   @default("")
+  rowsTotal     Int      @map("rows_total")
+  rowsImported  Int      @map("rows_imported")
+  rowsDuplicate Int      @map("rows_duplicate")
+  rowsFailed    Int      @map("rows_failed")
+  importedById  Int?     @map("imported_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+ 
+  session      AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  importedBy   User?            @relation(fields: [importedById], references: [id], onDelete: SetNull)
+  applications Application[]
+ 
+  @@unique([sessionId, batchName])
+  @@index([sessionId, fileHash])
+  @@map("import_batches")
+}
+

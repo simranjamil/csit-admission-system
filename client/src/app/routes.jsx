@@ -11,6 +11,8 @@ import NotFoundPage from "../errors/NotFoundPage";
 import ProtectedRoute from "../components/layout/ProtectedRoute";
 import RoleGuard from "../components/layout/RoleGuard";
 import AppShell from "../components/layout/AppShell";
+import ImportPage from "../features/import/ImportPage";
+import EligibilityPage from "../features/eligibility/EligibilityPage";
 
 export default function AppRoutes() {
   return (
@@ -28,6 +30,8 @@ export default function AppRoutes() {
             <Route path="/admin/setup" element={<SetupPage />} />
             <Route path="/admin/rules" element={<RulesPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
+            <Route path="/admin/import" element={<ImportPage />} />
+            <Route path="/admin/eligibility" element={<EligibilityPage />} />
             {/* new admin pages go here */}
           </Route>
           {/* Interviewer area */}
@@ -41,3 +45,4 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+

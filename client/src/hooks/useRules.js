@@ -23,7 +23,7 @@ export function useCreateRuleVersion() {
   return useMutation({
     mutationFn: createRuleVersion,
     onSuccess: () => {
-      for (const key of ["rules", "rule-versions", "dashboard-summary"]) {
+      for (const key of ["rules", "rule-versions", "eligibility-rule-versions", "dashboard-summary"]) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
     },

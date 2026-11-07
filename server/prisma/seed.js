@@ -91,8 +91,18 @@ async function seedAuth() {
       module: "interview",
       description: "Manage sessions, programs and open options",
     },
+    {
+      code: "import.manage",
+      module: "interview",
+      description: "Import application forms",
+    },
+    {
+      code: "eligibility.manage",
+      module: "interview",
+      description: "Run eligibility and download lists",
+    },
   ];
-
+  
   const permissions = {};
 
   for (const p of permissionList) {
@@ -200,7 +210,9 @@ async function seedAuth() {
   console.log("Authentication seed done");
 }
 async function seedRules() {
-  const sessions = await prisma.admissionSession.findMany({ select: { id: true } });
+  const sessions = await prisma.admissionSession.findMany({
+    select: { id: true },
+  });
   for (const s of sessions) {
     await prisma.$transaction((tx) => ensureRules(tx, s.id));
   }
