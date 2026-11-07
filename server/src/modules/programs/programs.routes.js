@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { validate } from "../../middleware/validate-request.js";
+import { requireAuth } from "../../middleware/require-auth.js";
+import { requirePermission } from "../../middleware/require-permission.js";
+import { createProgramSchema, updateProgramSchema } from "./programs.schema.js";
+import { list, create, update } from "./programs.controller.js";
+const router = Router();
+router.use(requireAuth, requirePermission("setup.manage"));
+router.get("/", list);
+router.post("/", validate(createProgramSchema), create);
+router.patch("/:id", validate(updateProgramSchema), update);
+export default router;

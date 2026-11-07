@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { validate } from "../../middleware/validate-request.js";
+import { requireAuth } from "../../middleware/require-auth.js";
+import { requirePermission } from "../../middleware/require-permission.js";
+import { createVersionSchema } from "./rules.schema.js";
+import { list, versions, create } from "./rules.controller.js";
+const router = Router();
+router.use(requireAuth, requirePermission("rules.manage"));
+router.get("/", list);
+router.get("/:id/versions", versions);
+router.post("/:id/versions", validate(createVersionSchema), create);
+export default router;

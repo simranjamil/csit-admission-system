@@ -6,8 +6,8 @@ import { TOPBAR_HEIGHT, SIDEBAR_WIDTH } from "../../utils/constants";
 // Naya page banne par: soon: true hata dein aur routes.jsx mein route add karein.
 const MENU = [
   { label: "Dashboard", to: "/admin", role: "Admin", exact: true },
-  { label: "Setup", to: "/admin/setup", role: "Admin", soon: true },
-  { label: "Rules", to: "/admin/rules", role: "Admin", soon: true },
+  { label: "Setup", to: "/admin/setup", role: "Admin" },
+  { label: "Rules", to: "/admin/rules", role: "Admin" },
   { label: "Import Students", to: "/admin/import", role: "Admin", soon: true },
   { label: "Eligibility", to: "/admin/eligibility", role: "Admin", soon: true },
   { label: "Import Results", to: "/admin/import-results", role: "Admin", soon: true },

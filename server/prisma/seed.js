@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import argon2 from "argon2";
+import { ensureRules } from "../src/modules/rules/rule-bootstrap.js";
 
 const prisma = new PrismaClient();
 
@@ -79,6 +80,16 @@ async function seedAuth() {
       code: "admission.decide",
       module: "admission",
       description: "Admit, reject or waitlist",
+    },
+    {
+      code: "rules.manage",
+      module: "interview",
+      description: "View and change admission rules",
+    },
+    {
+      code: "setup.manage",
+      module: "interview",
+      description: "Manage sessions, programs and open options",
     },
   ];
 
@@ -188,6 +199,12 @@ async function seedAuth() {
 
   console.log("Authentication seed done");
 }
+async function seedRules() {
+  const sessions = await prisma.admissionSession.findMany({ select: { id: true } });
+  for (const s of sessions) {
+    await prisma.$transaction((tx) => ensureRules(tx, s.id));
+  }
+}
 
 // ==========================================
 // 3. MAIN SEED FUNCTION
@@ -249,7 +266,7 @@ async function main() {
 
   // Seed authentication data
   await seedAuth();
-
+  await seedRules();
   console.log("Seed done");
 }
 

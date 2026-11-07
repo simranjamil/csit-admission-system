@@ -5,20 +5,21 @@ import { sessionMiddleware } from "./config/session.js";
 import publicRoutes from "./modules/public/public.routes.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import usersRoutes from "./modules/users/users.routes.js";
+import sessionsRoutes from "./modules/sessions/sessions.routes.js";
+import programsRoutes from "./modules/programs/programs.routes.js";
+import rulesRoutes from "./modules/rules/rules.routes.js";
 import { notFound, errorHandler } from "./middleware/error-handler.js";
- 
 const app = express();
- 
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
 app.use(express.json());
 app.use(sessionMiddleware);
- 
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/public", publicRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
- 
+app.use("/api/sessions", sessionsRoutes);
+app.use("/api/programs", programsRoutes);
+app.use("/api/rules", rulesRoutes);
 app.use(notFound);
 app.use(errorHandler);
- 
 export default app;

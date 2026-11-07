@@ -18,6 +18,11 @@ model AdmissionSession {
   createdAt DateTime @default(now()) @map("created_at")
 
   sessionPrograms SessionProgram[]
+  applications   Application[]
+  importJobs     ImportJob[]
+  workflowStages WorkflowStage[]
+  rules Rule[]
+
 
   @@map("admission_sessions")
 }
@@ -47,6 +52,8 @@ model ProgramTiming {
 
   program         Program          @relation(fields: [programId], references: [id])
   sessionPrograms SessionProgram[]
+    applications Application[]
+
 
 
   @@unique([programId, timing])
@@ -93,6 +100,10 @@ model User {
  
   userRoles UserRole[]
   auditLogs AuditLog[]
+  importJobs         ImportJob[]
+  admissionDecisions AdmissionDecision[]
+  ruleVersions RuleVersion[]
+
  
   @@map("users")
 }
@@ -169,3 +180,174 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model Student {
+  id         Int      @id @default(autoincrement())
+  cnic       String?  @unique
+  passport   String?  @unique
+  name       String
+  fatherName String?  @map("father_name")
+  gender     String?
+  mobile     String?
+  email      String?
+  isDummy    Boolean  @default(false) @map("is_dummy")
+  createdAt  DateTime @default(now()) @map("created_at")
+ 
+  applications Application[]
+ 
+  @@map("students")
+}
+ 
+model Application {
+  id                Int      @id @default(autoincrement())
+  sessionId         Int      @map("session_id")
+  studentId         Int      @map("student_id")
+  programTimingId   Int?     @map("program_timing_id")
+  formNo            String?  @map("form_no")
+  rollNo            String?  @map("roll_no")
+  originalRollNo    String?  @map("original_roll_no")
+  externalStudentId String?  @map("external_student_id")
+  degreeTitle       String?  @map("degree_title")
+  uniName           String?  @map("uni_name")
+  passingYear       Int?     @map("passing_year")
+  obtainedMarks     Decimal? @map("obtained_marks") @db.Decimal(10, 3)
+  totalMarks        Decimal? @map("total_marks") @db.Decimal(10, 3)
+  cgpa              Decimal? @db.Decimal(5, 3)
+  extraData         Json?    @map("extra_data")
+  isDummy           Boolean  @default(false) @map("is_dummy")
+  status            String   @default("APPLIED")
+  createdAt         DateTime @default(now()) @map("created_at")
+ 
+  session       AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  programTiming ProgramTiming?   @relation(fields: [programTimingId], references: [id])
+ 
+  eligibilityEvaluations EligibilityEvaluation[]
+  testAttempts           TestAttempt[]
+  admissionDecision      AdmissionDecision?
+ 
+  @@unique([sessionId, rollNo])
+  @@unique([sessionId, studentId, programTimingId])
+  @@index([sessionId])
+  @@map("applications")
+}
+ 
+model EligibilityEvaluation {
+  id            Int      @id @default(autoincrement())
+  applicationId Int      @map("application_id")
+  decision      String   // ELIGIBLE | INELIGIBLE
+  reason        String?
+  evaluatedAt   DateTime @default(now()) @map("evaluated_at")
+  ruleVersionId Int? @map("rule_version_id")
+  ruleVersion RuleVersion? @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+ 
+  @@index([applicationId])
+  @@map("eligibility_evaluations")
+  @@index([ruleVersionId])
+}
+ 
+model TestAttempt {
+  id              Int       @id @default(autoincrement())
+  applicationId   Int       @map("application_id")
+  obtainedMarks   Float     @map("obtained_marks")
+  totalMarks      Float     @map("total_marks")
+  percentage      Float
+  durationSeconds Int?      @map("duration_seconds")
+  takenAt         DateTime? @map("taken_at")
+  result          String    // PASSED | FAILED
+  createdAt       DateTime  @default(now()) @map("created_at")
+  ruleVersionId Int? @map("rule_version_id")
+  ruleVersion RuleVersion? @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+ 
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+ 
+  @@index([applicationId])
+   @@index([ruleVersionId])
+  @@map("test_attempts")
+  
+}
+ 
+model AdmissionDecision {
+  id            Int       @id @default(autoincrement())
+  applicationId Int       @unique @map("application_id")
+  status        String    @default("PENDING") // PENDING | ADMITTED | REJECTED | WAITLISTED
+  decidedById   Int?      @map("decided_by")
+  reason        String?
+  decidedAt     DateTime? @map("decided_at")
+ 
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decidedBy   User?       @relation(fields: [decidedById], references: [id])
+ 
+  @@map("admission_decisions")
+}
+ 
+model ImportJob {
+  id          Int      @id @default(autoincrement())
+  sessionId   Int      @map("session_id")
+  sourceType  String   @map("source_type") // STUDENTS | RESULTS
+  fileName    String   @map("file_name")
+  rowCount    Int      @default(0) @map("row_count")
+  status      String   @default("PENDING")
+  createdById Int?     @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+ 
+  session   AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdBy User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+ 
+  @@index([sessionId])
+  @@map("import_jobs")
+}
+ 
+model WorkflowStage {
+  id          Int       @id @default(autoincrement())
+  sessionId   Int       @map("session_id")
+  stageCode   String    @map("stage_code") // IMPORT | ELIGIBILITY | RESULTS | INTERVIEWS | MERIT | ADMISSION
+  status      String    @default("PENDING") // PENDING | IN_PROGRESS | DONE
+  completedAt DateTime? @map("completed_at")
+ 
+  session AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+ 
+  @@unique([sessionId, stageCode])
+  @@map("workflow_stages")
+}
+
+
+model Rule {
+  id        Int      @id @default(autoincrement())
+  sessionId Int      @map("session_id")
+  ruleKey   String   @map("rule_key") // MIN_CGPA | TEST_PASS | MERIT_WEIGHTS | INTERVIEW_SLOT
+  createdAt DateTime @default(now()) @map("created_at")
+
+
+  session  AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  versions RuleVersion[]
+
+
+  @@unique([sessionId, ruleKey])
+  @@map("rules")
+}
+
+
+model RuleVersion {
+  id            Int      @id @default(autoincrement())
+  ruleId        Int      @map("rule_id")
+  version       Int
+  config        Json
+  reason        String?
+  effectiveFrom DateTime @default(now()) @map("effective_from")
+  approvedById  Int?     @map("approved_by")
+
+
+  rule       Rule  @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  approvedBy User? @relation(fields: [approvedById], references: [id], onDelete: SetNull)
+
+
+  eligibilityEvaluations EligibilityEvaluation[]
+  testAttempts           TestAttempt[]
+
+
+  @@unique([ruleId, version])
+  @@map("rule_versions")
+}
