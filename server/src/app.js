@@ -11,6 +11,10 @@ import rulesRoutes from "./modules/rules/rules.routes.js";
 import { notFound, errorHandler } from "./middleware/error-handler.js";
 import importsRoutes from "./modules/imports/imports.routes.js";
 import eligibilityRoutes from "./modules/eligibility/eligibility.routes.js";
+import resultImportsRoutes from "./modules/result-imports/result-imports.routes.js";
+import lateAdmissionsRoutes from "./modules/late-admissions/late-admissions.routes.js";
+import testResultsRoutes from "./modules/test-results/test-results.routes.js";
+
 
 const app = express();
 app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }));
@@ -25,6 +29,9 @@ app.use("/api/programs", programsRoutes);
 app.use("/api/rules", rulesRoutes);
 app.use("/api/imports", importsRoutes);
 app.use("/api/eligibility", eligibilityRoutes);
+app.use("/api/result-imports", resultImportsRoutes);
+app.use("/api/late-admissions", lateAdmissionsRoutes);
+app.use("/api/test-results", testResultsRoutes);
 app.use(notFound);
 app.use(errorHandler);
 export default app;

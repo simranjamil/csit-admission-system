@@ -101,8 +101,23 @@ async function seedAuth() {
       module: "interview",
       description: "Run eligibility and download lists",
     },
+    {
+      code: "results.manage",
+      module: "interview",
+      description: "Import test results",
+    },
+    {
+      code: "late.manage",
+      module: "interview",
+      description: "Resolve late admission (dummy) students",
+    },
+    {
+      code: "testresults.manage",
+      module: "interview",
+      description: "Apply pass rule, view and download test results",
+    },
   ];
-  
+
   const permissions = {};
 
   for (const p of permissionList) {

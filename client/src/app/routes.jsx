@@ -13,6 +13,9 @@ import RoleGuard from "../components/layout/RoleGuard";
 import AppShell from "../components/layout/AppShell";
 import ImportPage from "../features/import/ImportPage";
 import EligibilityPage from "../features/eligibility/EligibilityPage";
+import ResultImportPage from "../features/results-import/ResultImportPage";
+import LateAdmissionsPage from "../features/late-admissions/LateAdmissionsPage";
+import TestResultsPage from "../features/test-results/TestResultsPage";
 
 export default function AppRoutes() {
   return (
@@ -32,6 +35,11 @@ export default function AppRoutes() {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/import" element={<ImportPage />} />
             <Route path="/admin/eligibility" element={<EligibilityPage />} />
+            <Route path="/admin/import-results" element={<ResultImportPage />} />
+            <Route path="/admin/late-admissions" element={<LateAdmissionsPage />} />
+            <Route path="/admin/test-results" element={<TestResultsPage />} />
+
+
             {/* new admin pages go here */}
           </Route>
           {/* Interviewer area */}

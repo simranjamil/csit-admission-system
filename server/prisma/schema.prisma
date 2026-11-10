@@ -38,7 +38,8 @@ model Program {
 
 
   timings ProgramTiming[]
-
+  importJobs   ImportJob[]
+  testAttempts TestAttempt[]
 
   @@map("programs")
 }
@@ -249,7 +250,6 @@ model EligibilityEvaluation {
   @@map("eligibility_evaluations")
   @@index([ruleVersionId])
 }
- 
 model TestAttempt {
   id              Int       @id @default(autoincrement())
   applicationId   Int       @map("application_id")
@@ -258,20 +258,25 @@ model TestAttempt {
   percentage      Float
   durationSeconds Int?      @map("duration_seconds")
   takenAt         DateTime? @map("taken_at")
-  result          String    // PASSED | FAILED
-  createdAt       DateTime  @default(now()) @map("created_at")
-  ruleVersionId Int? @map("rule_version_id")
-  ruleVersion RuleVersion? @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+  result          String?   // PASSED | FAILED, null until a rule is applied on the Test Results page  createdAt       DateTime  @default(now()) @map("created_at")
+  ruleVersionId   Int?      @map("rule_version_id")
  
-
-  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-
+  // new
+  programId   Int? @map("program_id")
+  importJobId Int? @map("import_job_id")
  
-  @@index([applicationId])
-   @@index([ruleVersionId])
+  ruleVersion    RuleVersion?        @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+  application    Application         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  program        Program?            @relation(fields: [programId], references: [id])
+  importJob      ImportJob?          @relation(fields: [importJobId], references: [id], onDelete: SetNull)
+  categoryScores TestCategoryScore[]
+ 
+  @@unique([applicationId])
+  @@index([ruleVersionId])
+  @@index([programId])
   @@map("test_attempts")
-  
 }
+
  
 model AdmissionDecision {
   id            Int       @id @default(autoincrement())
@@ -293,16 +298,29 @@ model ImportJob {
   sourceType  String   @map("source_type") // STUDENTS | RESULTS
   fileName    String   @map("file_name")
   rowCount    Int      @default(0) @map("row_count")
-  status      String   @default("PENDING")
+  status      String   @default("PENDING") // PENDING | DONE
   createdById Int?     @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
  
+  // new: used by the result imports
+  programId     Int?    @map("program_id")
+  fileHash      String? @map("file_hash")
+  description   String  @default("")
+  rowsImported  Int     @default(0) @map("rows_imported")
+  rowsDummy     Int     @default(0) @map("rows_dummy")
+  rowsDuplicate Int     @default(0) @map("rows_duplicate")
+  rowsFailed    Int     @default(0) @map("rows_failed")
+ 
   session   AdmissionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   createdBy User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  program   Program?         @relation(fields: [programId], references: [id])
+  attempts  TestAttempt[]
  
   @@index([sessionId])
+  @@index([sessionId, programId, fileHash])
   @@map("import_jobs")
 }
+
  
 model WorkflowStage {
   id          Int       @id @default(autoincrement())
@@ -379,3 +397,15 @@ model ImportBatch {
   @@map("import_batches")
 }
 
+model TestCategoryScore {
+  id            Int    @id @default(autoincrement())
+  attemptId     Int    @map("attempt_id")
+  categoryName  String @map("category_name")
+  obtainedMarks Float  @map("obtained_marks")
+  totalMarks    Float  @map("total_marks")
+ 
+  attempt TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+ 
+  @@index([attemptId])
+  @@map("test_category_scores")
+}
